@@ -20,22 +20,39 @@ spec:
     - Api
   stk-projects-only: false
   inputs:
-    - label: Type name of your resource
-      name: resource
-      type: text
+    - label: Utilizar openapi ?
+      name: use_openapi
+      type: bool
+      default: false
       required: true
-      default: Client
-      pattern: '([A-Z][a-z]+)+'
-      help: 'Inform your resource name (e.g.: Client)'
-    - label: Choose http method of new endpoint
-      name: method
-      type: text
-      items:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - PATCH
-      default: GET
-      required: true
-      help: 'Inform the method of the endpoint (e.g.: post or delete)'
+
+  computed-inputs:
+      inner_project_name: "{{default_project_name or 'default_value'}}"
+
+  hooks:
+  - type: run
+    trigger: before-render
+    working-dir: "."
+    commands:
+      - mkdir api
+      - touch api/openapi.yaml
+    condition:
+      variable: use_openapi
+      operator: "=="
+      value: true
+
+  - type: edit
+    trigger: after-render
+    path: "api/openapi.yaml"
+    changes:
+    - insert:
+        line: 0
+        snippet: snippet/content_openapi.txt
+        when:
+          not-exists-snippet: snippet/content_openapi.txt
+    condition:
+      variable: use_openapi
+      operator: "=="
+      value: true        
+
+
